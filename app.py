@@ -30,7 +30,7 @@ def hello():
     params['country']='desconocido'
     params['region']='desconocido'
     params['isp']='desconocido'
-    params['datos']=request.str(request.headers.to_list())
+    params['datos']=str(request.headers.to_list())
 
   params['hostname']=socket.gethostname()
   return render_template('hello.html', params=params)
