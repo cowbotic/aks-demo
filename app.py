@@ -17,7 +17,6 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
   params={}
-  print ('--La direccion es --'+request.remote_addr)
   params['ip']=request.remote_addr
   
   datos_ip=requests.get('http://ip-api.com/json/'+params['ip'])
@@ -31,6 +30,7 @@ def hello():
     params['region']='desconocido'
     params['isp']='desconocido'
 
+  params['hostname']=socket.gethostname()
   return render_template('hello.html', params=params)
 
 @app.route("/maquina")
