@@ -25,12 +25,12 @@ def hello():
     params['country']=datos_ip.json()['country']
     params['region']=datos_ip.json()['regionName']
     params['isp']=datos_ip.json()['isp']
-    params['datos']=datos_ip.json()
+    params['datos']=str(request.headers.to_list())
   else:
     params['country']='desconocido'
     params['region']='desconocido'
     params['isp']='desconocido'
-    params['datos']=datos_ip.json()
+    params['datos']=request.str(request.headers.to_list())
 
   params['hostname']=socket.gethostname()
   return render_template('hello.html', params=params)
