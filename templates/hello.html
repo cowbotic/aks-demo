@@ -1,20 +1,10 @@
 {% extends "plantillappal.html" %}
 {% block particular %}
         <div class="cajita">
-            <p style="font-size: 200%">¡¡Bienvenido!!</p>
-            <p style="font-size: 120%">Estos son tus datos:</p>
+            <p style="font-size: 150%">Datos del visitante:</p>
             <p style="font-size: 80%"><font face="courier">IP: {{ params['ip'] }} </font></p>
             <p style="font-size: 80%"><font face="courier">Pais: {{ params['country'] }} </font></p>
             <p style="font-size: 80%"><font face="courier">Region: {{ params['region'] }}</font></p>
             <p style="font-size: 80%"><font face="courier">Proveedor: {{ params['isp'] }}</font></p>
-
-            <ul>
-                <li> 
-                    <a href="{{ url_for('calcula') }}"> Calcula decimales de &#960 </a>
-                </li>
-                <li> 
-                    <a href="{{ url_for('maquina') }}"> ¿D&oacutende me ejecuto? </a>
-                </li>
-            </ul>
         </div>
 {% endblock %}
