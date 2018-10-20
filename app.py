@@ -16,7 +16,8 @@ def hello():
   
   datos_ip=requests.get('http://ip-api.com/json/'+params['ip'])
   
-  if 'country' in datos_ip.json().keys() and 'region' in datos_ip.json().keys() and 'isp' in datos_ip.json().keys():
+  if len(set(['country','region','isp']).intersection(datos_ip.json().keys())) == 3:
+  #if 'country' in datos_ip.json().keys() and 'region' in datos_ip.json().keys() and 'isp' in datos_ip.json().keys():
     params['country']=datos_ip.json()['country']
     params['region']=datos_ip.json()['regionName']
     params['isp']=datos_ip.json()['isp']
