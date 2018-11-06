@@ -11,7 +11,10 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
   params={}
-  params['ip']=request.remote_addr
+  if request.headers.getlist("X-Forwarded-For"):
+    params['ip'] = request.headers.getlist("X-Forwarded-For")[0]
+  else:
+   params['ip'] = request.remote_addr
   
   datos_ip=requests.get('http://ip-api.com/json/'+params['ip'])
   
@@ -65,7 +68,7 @@ def particularandom():
 "Quark-Up":{"nombre":"Quark-Up","masa":"2.2 MeV/c^2","carga":"2/3","spin":"1/2","tipo":"Quarks","descubierto":"1968 @SLAC"},
 "Tau.jpg":{"nombre":"Tau","masa":"1.7768 GeV/c^2","carga":"-1","spin":"1/2","tipo":"Leptones","descubierto":"1976 @SLAC"}}
   particula=random.choice(list(particulas.keys()))
-  props=particulas[particula]
+  props=particulas[particula] 
   return render_template('particularandom.html', params=props)
 
 @app.route('/elementos')
