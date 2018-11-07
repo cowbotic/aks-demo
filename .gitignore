@@ -1,4 +1,4 @@
-*.yaml
+
 *.py[cod]
 
 # Windows thumbnail cache files
@@ -28,3 +28,6 @@ $RECYCLE.BIN/
 #Marketing
 *.pptx
 *.ppt
+
+#All under utils directory
+ultils/

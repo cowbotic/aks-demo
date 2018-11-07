@@ -1,0 +1,24 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: aks-app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: aks-app
+    spec:
+      containers:
+      - name: una-app-aks
+        image: cowbotic/aks-demo
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "2"
+            memory: "900Mi"
+          requests:
+            cpu: "1"
+            memory: "450Mi"
