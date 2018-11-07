@@ -38,6 +38,14 @@ def datos():
   resp=app.make_response('{"Hostname": "'+socket.gethostname()+'"}')
   return resp
 
+@app.route('/cabeceras')
+def cabeceras():
+  respuesta=''
+  for elemento in request.headers.keys():
+    respuesta+='-'+str(elemento)+' : '+request.headers.getlist(elemento)[0]+'<br>'
+  return respuesta
+
+
 @app.route('/tetraedro')
 def tetraedro():
   return render_template('tetraedro.html')
@@ -77,7 +85,7 @@ def elementos():
 
 @app.route('/elementorandom')
 def elementorandom():
-  with open('static/particulas/TablaPeriodica.json') as elementos_data:
+  with open('static/elementos/TablaPeriodica.json') as elementos_data:
     elementos=json.load(elementos_data)
 
   elemento=random.choice(list(elementos.keys()))
