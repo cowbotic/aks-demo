@@ -45,7 +45,6 @@ def cabeceras():
     respuesta+='-'+str(elemento)+' : '+request.headers.getlist(elemento)[0]+'<br>'
   return respuesta
 
-
 @app.route('/tetraedro')
 def tetraedro():
   return render_template('tetraedro.html')
@@ -91,7 +90,6 @@ def elementorandom():
   elemento=random.choice(list(elementos.keys()))
   props=elementos[elemento]
   return render_template('elementorandom.html', params=props)
-
 
 
 if __name__ == '__main__':
