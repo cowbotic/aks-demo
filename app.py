@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, request, make_response, jsoni
 import os, socket, sys, random, time, math, functools, requests, json, redis
 
 
+#Cabeceras http modificadas para algunas respuestas en JSON...
 headers={'mimetype':'application/json','Content-Type':'application/json','Server':'Who cares'}
 redis_server = 'redis-server'
 
@@ -61,7 +62,7 @@ def redis():
   if REDIS_UP:
     dstore.incr('conexiones',1)
     dato=dstore.get('conexiones')
-    resp=make_response('{"conexiones":'+dato+'}')
+    resp=make_response('{"conexiones":'+str(dato)+'}')
   else:
     resp=make_response('{"redis":"Error"}')
     
