@@ -61,7 +61,7 @@ def healthz():
 def redis():
   if REDIS_UP:
     dstore.incr('conexiones',1)
-    dato=dstore.get('conexiones')
+    dato=dstore.get('conexiones').decode('utf-8')
     resp=make_response('{"conexiones":'+str(dato)+'}')
   else:
     resp=make_response('{"redis":"Error"}')
@@ -93,7 +93,7 @@ def particularandom():
 
   if REDIS_UP:
     dstore.incr(particula,1)
-    props['vistas']=dstore.get(particula)
+    props['vistas']=dstore.get(particula).decode('utf-8')
   else:
     props['vistas']=0 
   
@@ -108,7 +108,10 @@ def particulasvisitadas():
 
   if REDIS_UP:
     for particula in particulas:
-      resp_dict[particula]=dstore.get(particula)
+      if dstore.get(particula) is not None:
+        resp_dict[particula]=dstore.get(particula).decode('utf-8')
+      else:
+        resp_dict[particula]=0
   else:
     resp_dict={"redis":"Error"}
 
@@ -144,7 +147,10 @@ def elementosvisitados():
 
   if REDIS_UP:
     for elemento in elementos:
-      resp_dict[elemento]=dstore.get(elemento)
+      if dstore.get(elemento) is not None:
+        resp_dict[elemento]=dstore.get(elemento).decode('utf-8')
+      else:
+        resp_dict[elemento]=0
   else:
     resp_dict={"redis":"Error"}
 
