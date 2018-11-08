@@ -1,6 +1,20 @@
-from flask import Flask, render_template, url_for, request
-import os, socket, sys, random, time, math, functools, requests, jsonify, json
+from flask import Flask, render_template, url_for, request, make_response, jsonify
+import os, socket, sys, random, time, math, functools, requests, json, redis
 
+
+headers={'mimetype':'application/json','Content-Type':'application/json','Server':'Who cares'}
+redis_server = 'redis-server'
+
+#Conectamos a ver si hay Redis...
+try:
+  dstore = redis.Redis(redis_server)
+  dstore.ping()
+  REDIS_UP=True
+except redis.ConnectionError:
+  print('{"redis":"Redis no esta disponible"}')
+  REDIS_UP=False
+
+#Funcion para adivinar la direccion IP del servidor...
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
@@ -33,21 +47,36 @@ def hello():
   params['hostname']=socket.gethostname()
   return render_template('hello.html', params=params)
 
-@app.route('/datos')
-def datos():
-  resp=app.make_response('{"Hostname": "'+socket.gethostname()+'"}')
+@app.route('/healthz')
+def healthz():
+  body={'status':208,'todo':'bien'}
+  status=body['status']
+  headers={'mimetype':'application/json','Content-Type':'application/json'}
+
+  resp=make_response((jsonify(body), status, headers))
+  return resp
+
+@app.route('/redis')
+def redis():
+  if REDIS_UP:
+    dstore.incr('conexiones',1)
+    dato=dstore.get('conexiones')
+    resp=make_response('{"conexiones":'+dato+'}')
+  else:
+    resp=make_response('{"redis":"Error"}')
+    
   return resp
 
 @app.route('/cabeceras')
 def cabeceras():
-  respuesta=''
-  for elemento in request.headers.keys():
-    respuesta+='-'+str(elemento)+' : '+request.headers.getlist(elemento)[0]+'<br>'
-  return respuesta
+  status=200
 
-@app.route('/tetraedro')
-def tetraedro():
-  return render_template('tetraedro.html')
+  resp_dict={}
+  for elemento in request.headers.keys():
+    resp_dict[str(elemento)]=request.headers.getlist(elemento)[0]
+  
+  resp=make_response((jsonify(resp_dict), status, headers))
+  return resp
 
 @app.route('/particulas')
 def particulas():
@@ -55,28 +84,35 @@ def particulas():
 
 @app.route('/particularandom')
 def particularandom():
-  particulas={"BosonW+":{"nombre":"BosonW+","masa":"80.39 GeV/c^2","carga":"1","spin":"1","tipo":"Bosones","descubierto":"1983 @CERN"},
-"BosonW-":{"nombre":"BosonW-","masa":"80.39 GeV/c^2","carga":"-1","spin":"1","tipo":"Bosones","descubierto":"1983 @CERN"},
-"BosonZ0":{"nombre":"BosonZ0","masa":"91.19 GeV/c^2","carga":"0","spin":"1","tipo":"Bosones","descubierto":"1983 @CERN"},
-"Electron":{"nombre":"Electron","masa":"0.51 MeV/c^2","carga":"-1","spin":"1/2","tipo":"Leptones","descubierto":"1897 @Cavendish Lab"},
-"Foton":{"nombre":"Foton","masa":"0","carga":"0","spin":"1","tipo":"Bosones","descubierto":"1923 @Washington Univ."},
-"Gluon":{"nombre":"Gluon","masa":"0","carga":"0","spin":"1","tipo":"Bosones","descubierto":"1979 @DESY"},
-"Graviton":{"nombre":"Graviton","masa":"0","carga":"0","spin":"2","tipo":"Bosones (Teorico)","descubierto":"Aun no..."},
-"Higss":{"nombre":"Higss","masa":"125.09 GeV/c^2","carga":"0","spin":"0","tipo":"Bosones","descubierto":"2012 @CERN"},
-"Muon":{"nombre":"Muon","masa":"105.66 MeV/c^2","carga":"-1","spin":"1/2","tipo":"Leptones","descubierto":"1927 @Caltech & Harvard"},
-"Neutrino-Muon":{"nombre":"Neutrino-Muon","masa":"<1.7 MeV/c^2","carga":"0","spin":"1/2","tipo":"Leptones","descubierto":"1962 @Brookhaven"},
-"Neutrino-Tau":{"nombre":"Neutrino-Tau","masa":"<15.5 MeV/c^2","carga":"0","spin":"1/2","tipo":"Leptones","descubierto":"2000 @Fermilab"},
-"Neutrino":{"nombre":"Neutrino","masa":"<2.2 eV/c^2","carga":"0","spin":"1/2","tipo":"Leptones","descubierto":"1956 @Shavannah River plant"},
-"Quark-Beauty":{"nombre":"Quark-Beauty","masa":"4.18 GeV/c^2","carga":"-1/3","spin":"1/2","tipo":"Quarks","descubierto":"1977 @Fermilab"},
-"Quark-Charm":{"nombre":"Quark-Charm","masa":"1.28 GeV/c^2","carga":"2/3","spin":"1/2","tipo":"Quarks","descubierto":"1974 @Brookhaven & SLAC"},
-"Quark-Down":{"nombre":"Quark-Down","masa":"4.7 MeV/c^2","carga":"-1/3","spin":"1/2","tipo":"Quarks","descubierto":"1968 @SLAC"},
-"Quark-Strange":{"nombre":"Quark-Strange","masa":"96 MeV/c^2","carga":"-1/3","spin":"1/2","tipo":"Quarks","descubierto":"1947 @Manchester Univ."},
-"Quark-Top":{"nombre":"Quark-Top","masa":"173.1 GeV/c^2","carga":"2/3","spin":"1/2","tipo":"Quarks","descubierto":"1995 @Fermilab"},
-"Quark-Up":{"nombre":"Quark-Up","masa":"2.2 MeV/c^2","carga":"2/3","spin":"1/2","tipo":"Quarks","descubierto":"1968 @SLAC"},
-"Tau.jpg":{"nombre":"Tau","masa":"1.7768 GeV/c^2","carga":"-1","spin":"1/2","tipo":"Leptones","descubierto":"1976 @SLAC"}}
+  with open('static/particulas/particulas.json') as particulas_data:
+    particulas=json.load(particulas_data)
+  
   particula=random.choice(list(particulas.keys()))
-  props=particulas[particula] 
+  props=particulas[particula]
+
+  if REDIS_UP:
+    dstore.incr(particula,1)
+    props['vistas']=dstore.get(particula)
+  else:
+    props['vistas']=0 
+  
   return render_template('particularandom.html', params=props)
+
+@app.route('/particulasvisitadas')
+def particulasvisitadas():
+  resp_dict={}
+  
+  with open('static/particulas/particulas.json') as particulas_data:
+    particulas=json.load(particulas_data)
+
+  if REDIS_UP:
+    for particula in particulas:
+      resp_dict[particula]=dstore.get(particula)
+  else:
+    resp_dict={"redis":"Error"}
+
+  resp=make_response(jsonify(resp_dict),headers)
+  return resp
 
 @app.route('/elementos')
 def elementos():
@@ -89,8 +125,30 @@ def elementorandom():
 
   elemento=random.choice(list(elementos.keys()))
   props=elementos[elemento]
+  if REDIS_UP:
+    dstore.incr(elemento,1)
+    props['vistas']=dstore.get(elemento)
+  else:
+    props['vistas']=0
+
   return render_template('elementorandom.html', params=props)
 
+
+@app.route('/elementosvisitados')
+def elementosvisitados():
+  resp_dict={}
+  
+  with open('static/elementos/TablaPeriodica.json') as elementos_data:
+    elementos=json.load(elementos_data)
+
+  if REDIS_UP:
+    for elemento in elementos:
+      resp_dict[elemento]=dstore.get(elemento)
+  else:
+    resp_dict={"redis":"Error"}
+
+  resp=make_response(jsonify(resp_dict),headers)
+  return resp
 
 if __name__ == '__main__':
   app.run()
