@@ -30,4 +30,4 @@ $RECYCLE.BIN/
 *.ppt
 
 #All under utils directory
-utils/
+/utils/*
