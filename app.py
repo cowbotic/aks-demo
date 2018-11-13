@@ -62,7 +62,7 @@ def redis():
   if REDIS_UP:
     dstore.incr('conexiones',1)
     dato=dstore.get('conexiones').decode('utf-8')
-    resp=make_response('{"conexiones":'+str(dato)+'}')
+    resp=make_response('{"conexiones":'+str(dato)+',"Servidor":"'+socket.gethostname()+'"}')
   else:
     resp=make_response('{"redis":"Error"}')
     
@@ -131,7 +131,7 @@ def elementorandom():
   props=elementos[elemento]
   if REDIS_UP:
     dstore.incr(elemento,1)
-    props['vistas']=dstore.get(elemento)
+    props['vistas']=dstore.get(elemento).decode('utf-8')
   else:
     props['vistas']=0
 
